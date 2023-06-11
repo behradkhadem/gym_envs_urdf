@@ -1,9 +1,9 @@
 # Basic imports
-import gym
+import gymnasium as gym
 import numpy as np
 import os
-from gym.wrappers import FlattenObservation
-
+from gymnasium.wrappers import FlattenObservation
+print(gym.__version__)
 # Stable baselines 3
 ''' 
 Stable baselines 3 has a build-in function called `check_env` that checks if the environment is compatible with the library. 
@@ -65,12 +65,15 @@ defaultAction = np.array([0.5, -0.0, 0.0])
 pos0 = np.array([0.0, 0.1, 0.0])
 vel0 = np.array([1.0, 0.0, 0.0])
 
-ob = env.reset(pos=pos0, vel=vel0)
+ob, info= env.reset(pos=pos0, vel=vel0)
 env.shuffle_goals()
+
+env = gym.make("GymV26Environment-v0", apply_api_compatibility=True, env=env)
 
 env = FlattenObservation(env)
 
 env = StableBaselinesFloat32ActionWrapper(env)
+
 
 print("🏁 Check Env Started.")
 check_env(env, warn=True)

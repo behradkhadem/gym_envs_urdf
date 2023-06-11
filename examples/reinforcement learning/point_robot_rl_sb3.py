@@ -62,7 +62,7 @@ env.set_reward_calculator(InverseDistanceDenseReward())
 defaultAction = np.array([0.5, -0.0, 0.0])
 pos0 = np.array([0.0, 0.1, 0.0])
 vel0 = np.array([1.0, 0.0, 0.0])
-ob = env.reset(pos=pos0, vel=vel0)
+ob, info= env.reset(pos=pos0, vel=vel0)
 env.shuffle_goals()
 
 env = FlattenObservation(env)

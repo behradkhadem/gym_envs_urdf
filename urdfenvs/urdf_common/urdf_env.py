@@ -97,7 +97,7 @@ class UrdfEnv(gym.Env):
         self._t: float = 0.0
         self._robots: List[GenericRobot] = robots
         self._render: bool = render
-        self._done: bool = False
+        self._terminated: bool = False
         self._info: dict = {}
         self._num_sub_steps: float = 20
         self._obsts: dict = {}
@@ -206,7 +206,7 @@ class UrdfEnv(gym.Env):
         # Feed action to the robot and get observation of robot's state
 
         if not self.action_space.contains(action):
-            self._done = True
+            self._terminated = True
             self._info = {'action_limits': f"{action} not in {self.action_space}"}
 
 
@@ -231,8 +231,13 @@ class UrdfEnv(gym.Env):
         
         if self._render:
             self.render()
-        return ob, reward, self._done, self._info
-
+        truncated = self._get_truncated() 
+        return ob, reward, self._terminated, truncated, self._info
+    
+    def _get_truncated(self) -> bool:
+        # TODO: Implement truncated.
+        return False
+    
     def _get_ob(self) -> dict:
         """Compose the observation."""
         observation = {}
@@ -248,7 +253,7 @@ class UrdfEnv(gym.Env):
                 try:
                     check_observation(self.observation_space, observation)
                 except WrongObservationError as e:
-                    self._done = True
+                    self._terminated = True
                     self._info = {'observation_limits': str(e)}
         return observation
 
@@ -517,7 +522,7 @@ class UrdfEnv(gym.Env):
         vel: np.ndarray = None,
         mount_positions: np.ndarray = None,
         mount_orientations: np.ndarray = None,
-    ) -> gym.spaces.Dict:
+    ) -> tuple:
         """Resets the simulation and the robot.
 
         Parameters
@@ -534,6 +539,7 @@ class UrdfEnv(gym.Env):
             Mounting position for the robots
             This is ignored for mobile robots
         """
+        super().reset()
         self._t = 0.0
         if mount_positions is None:
             mount_positions = np.tile(np.zeros(3), (len(self._robots), 1))
@@ -562,7 +568,7 @@ class UrdfEnv(gym.Env):
             )
         self.reset_obstacles()
         self.reset_goals()
-        return self._get_ob()
+        return self._get_ob(), self._info
 
     def render(self) -> None:
         """Rendering the simulation environment.
